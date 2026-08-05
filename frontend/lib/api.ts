@@ -2,9 +2,18 @@
 // Client API centralizzato. Tutte le fetch passano da qui per aggiungere
 // automaticamente l'header Authorization con il JWT salvato in localStorage.
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL
-  ? `${process.env.NEXT_PUBLIC_API_URL}/api`
-  : '/api';
+function getBaseUrl(): string {
+  const raw = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (!raw) return '/api';
+
+  const clean = raw.replace(/\/+$/, '');
+  if (clean.endsWith('/api')) {
+    return clean;
+  }
+  return `${clean}/api`;
+}
+
+const BASE_URL = getBaseUrl();
 
 type FetchOptions = RequestInit & {
   noAuth?: boolean;
@@ -43,7 +52,18 @@ async function apiFetch<T = unknown>(
   // 204 No Content — risposta vuota
   if (res.status === 204) return undefined as T;
 
-  const data = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  let data: any = null;
+
+  if (contentType.includes('application/json')) {
+    data = await res.json();
+  } else {
+    const text = await res.text();
+    console.error('[API Error non-JSON response]:', text);
+    throw new Error(
+      `Il server ha restituito una risposta non valida (${res.status}). Verifica l'URL dell'API o che il backend sia attivo.`
+    );
+  }
 
   if (!res.ok) {
     throw new Error(data?.error || `Errore ${res.status}`);
