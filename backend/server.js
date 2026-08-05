@@ -29,12 +29,19 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Permetti richieste senza origine (es. Postman, curl) in sviluppo
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`CORS policy: origine non permessa: ${origin}`));
+      // Permetti richieste senza origin (Postman, server-to-server)
+      if (!origin) return callback(null, true);
+      
+      // Permetti se in lista, se finisce per .vercel.app o in dev mode
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        process.env.NODE_ENV !== 'production'
+      ) {
+        return callback(null, true);
       }
+      
+      callback(new Error(`CORS policy: origine non permessa: ${origin}`));
     },
     credentials: true,
   })
