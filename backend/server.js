@@ -17,6 +17,9 @@ const authRouter = require('./routes/auth');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+//Abilita il trust proxy per Render/Vercel (reverse proxy) in modo che express-rate-limit identifichi correttamente gli IP
+app.set('trust proxy', 1);
+
 // ─── Security ────────────────────────────────────────────────────────────────
 app.use(helmet());
 
