@@ -105,9 +105,10 @@ router.get('/proposals', optionalAuth, async (req, res, next) => {
   }
 });
 
-// ─── GET /api/proposals/mine/created — proposte del creatore loggato ──────────
-// IMPORTANTE: questo pattern deve stare PRIMA di /:slug per evitare conflitti
-router.get('/proposals/mine/created', requireAuth, async (req, res, next) => {
+// ─── GET /api/proposals/creator/list — proposte del creatore loggato ──────────
+// NOTA: usando /creator/list invece di /mine/created evitiamo qualsiasi ambiguità
+// con la route /:slug (Express potrebbe interpretare 'mine' come uno slug).
+router.get('/proposals/creator/list', requireAuth, async (req, res, next) => {
   try {
     const result = await pool.query(
       `SELECT p.*,
