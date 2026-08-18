@@ -34,9 +34,9 @@ router.post('/proposals/:proposalId/applications', requireAuth, async (req, res,
 });
 
 // GET /api/me/applications — tutte le candidature inviate dall'utente loggato
-// (usato per mostrare lo stato "in attesa / accettata / rifiutata / ritirata")
 router.get('/me/applications', requireAuth, async (req, res, next) => {
   try {
+    console.log('[applications] GET /me/applications - utente:', req.user.id);
     const result = await pool.query(
       `SELECT a.*, p.title AS proposal_title, p.slug AS proposal_slug
        FROM applications a
@@ -45,6 +45,7 @@ router.get('/me/applications', requireAuth, async (req, res, next) => {
        ORDER BY a.created_at DESC`,
       [req.user.id]
     );
+    console.log('[applications] trovate:', result.rowCount, 'candidature per utente', req.user.id);
     res.json({ applications: result.rows });
   } catch (err) {
     next(err);
@@ -54,6 +55,7 @@ router.get('/me/applications', requireAuth, async (req, res, next) => {
 // GET /api/proposals/:proposalId/applications — elenco candidati (solo creatore)
 router.get('/proposals/:proposalId/applications', requireAuth, async (req, res, next) => {
   try {
+    console.log('[applications] GET /proposals/:proposalId/applications - proposalId:', req.params.proposalId, '- utente:', req.user.id);
     const proposalRes = await pool.query(`SELECT creator_id FROM proposals WHERE id = $1`, [
       req.params.proposalId,
     ]);
@@ -71,11 +73,13 @@ router.get('/proposals/:proposalId/applications', requireAuth, async (req, res, 
        ORDER BY a.created_at ASC`,
       [req.params.proposalId]
     );
+    console.log('[applications] trovati:', result.rowCount, 'candidati per proposta', req.params.proposalId);
     res.json({ applications: result.rows });
   } catch (err) {
     next(err);
   }
 });
+
 
 // PATCH /api/applications/:id/accept — REGOLA CRITICA (vedi applicationService)
 router.patch('/applications/:id/accept', requireAuth, async (req, res, next) => {
