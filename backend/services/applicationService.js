@@ -139,6 +139,16 @@ async function acceptApplication(applicationId, creatorId) {
       [applicationId]
     );
 
+    // 3b) Decrementiamo il numero di posizioni disponibili sulla proposta.
+    // Se i posti rimasti scendono a 0, la proposta viene chiusa automaticamente ('closed').
+    await client.query(
+      `UPDATE proposals
+       SET positions_available = GREATEST(0, positions_available - 1),
+           status = CASE WHEN (positions_available - 1) <= 0 THEN 'closed' ELSE status END
+       WHERE id = $1`,
+      [target.proposal_id]
+    );
+
     await createNotification(client, {
       userId: target.applicant_id,
       type: 'application_accepted',
