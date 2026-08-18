@@ -105,7 +105,7 @@ export const api = {
     get: (slug: string) =>
       apiFetch<{ proposal: Proposal; myApplication: Application | null }>(`/proposals/${slug}`),
 
-    mine: () => apiFetch<{ proposals: Proposal[] }>('/proposals/mine/created'),
+    mine: () => apiFetch<{ proposals: Proposal[] }>('/proposals/creator/list'),
 
     create: (formData: FormData) =>
       apiFetch<{ proposal: Proposal }>('/proposals', { method: 'POST', body: formData }),
